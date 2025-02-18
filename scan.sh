@@ -15,6 +15,7 @@ diverged=0
 noupstream=0
 
 start_time=$(date +%s)
+reportfile=/tmp/gitmgr-scanner.log
 ROOT_DIR=${1:-"/"}
 
 line() {
@@ -26,10 +27,32 @@ newline() {
     echo ""
 }
 
+print() {
+    name=$1
+    count=$2
+    color=${3:-0}
+    type=${4:-"repositories"}
+
+    echo -e "\e[${color}m$name\e[0m:\t$count $type"
+    report "$name: $count $type"
+}
+
+report () {
+    line="$1"
+    echo "$line" >> $reportfile
+}
+
+reportnewline () {
+    report ""
+}
+
+> $reportfile
 line
-echo "Gitmgr Scanner V. $version"
+echo "gitmgr Scanner V. $version"
 echo "Scanning $ROOT_DIR..."
+report "gitmgr Scanner V. $version: scanning $ROOT_DIR..."
 newline
+reportnewline
 
 while read git_dir; do
     repo_dir=$(dirname "$git_dir")
@@ -99,33 +122,47 @@ while read git_dir; do
     fi
 
     echo -e "\e[${statuscolor}m[*]\e[0m (\e[${commitcolor}m$commitstatus\e[0m, \e[${synccolor}m$syncstatus\e[0m):\t$repo_dir"
+    report "- ($commitstatus, $syncstatus): $repo_dir"
 done < <(find "$ROOT_DIR" -type d -name ".git")
 
 end_time=$(date +%s)
 elapsed=$((end_time - start_time))
+gitline="Git findings for $ROOT_DIR:"
 
-print() {
-    name=$1
-    count=$2
-    color=${3:-0}
-    type=${4:-"repositories"}
+newline
+echo -e "$gitline"
 
-    echo -e "\e[${color}m$name\e[0m:\t$count $type"
-}
+reportnewline
+report "$gitline"
 
-echo -e "\nGit findings for $ROOT_DIR:"
 print "Total" $total
 print "Elapsed" $elapsed 0 "seconds"
+
 newline
+reportnewline
+
 print "OK" $oks 32
 print "Warnings" $warnings 33
 print "Errors" $errors 31
+
 newline
+reportnewline
+
 print "Uncommitted" $uncommitted 31
 print "Not synced" $unsynced 33
+
 newline
+reportnewline
+
 print "Ahead" $ahead 33
 print "Behind" $behind 33
 print "Diverged" $diverged 33
 print "No upstream" $noupstream 33
+
+newline
+echo "Git repository scan complete"
+echo "Report available at $reportfile"
+
+reportnewline
+report "End of report: report available at $reportfile"
 line
