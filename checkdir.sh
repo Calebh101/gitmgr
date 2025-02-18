@@ -8,6 +8,7 @@ errors=0
 uncommitted=0
 unsynced=0
 
+start_time=$(date +%s)
 ROOT_DIR=$1
 echo "Scanning $ROOT_DIR..."
 
@@ -21,7 +22,7 @@ while read git_dir; do
     
     if [[ -n "$LOCAL_AHEAD" && "$LOCAL_AHEAD" -gt 0 ]]; then
         syncstatus="not synced"
-        synccolor=31
+        synccolor=33
         ((unsynced++))
     else
         syncstatus=synced
@@ -51,4 +52,7 @@ while read git_dir; do
     echo -e "\e[${statuscolor}m[*]\e[0m (\e[${commitcolor}m$commitstatus\e[0m, \e[${synccolor}m$syncstatus\e[0m): $repo_dir"
 done < <(find "$ROOT_DIR" -type d -name ".git")
 
-echo -e "\nGit findings for $ROOT_DIR:\n\n\e[32mOK\e[0m: $oks\n\e[33mWarnings\e[0m: $warnings\n\e[31mErrors\e[0m: $errors\nTotal: $total\n\n\e[31mUncommitted\e[0m: $uncommitted\n\e[33mNot synced\e[0m: $unsynced"
+end_time=$(date +%s)
+elapsed=$((end_time - start_time))
+
+echo -e "\nGit findings for $ROOT_DIR:\n\nTotal: $total repositories\nElapsed: $elapsed seconds\n\n\e[32mOK\e[0m: $oks repositories\n\e[33mWarnings\e[0m: $warnings repositories\n\e[31mErrors\e[0m: $errors repositories\n\n\e[31mUncommitted\e[0m: $uncommitted repositories\n\e[33mNot synced\e[0m: $unsynced repositories"
