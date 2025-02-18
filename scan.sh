@@ -15,7 +15,7 @@ diverged=0
 noupstream=0
 
 start_time=$(date +%s)
-ROOT_DIR=${1:-"~"}
+ROOT_DIR=${1:-"/"}
 
 line() {
     width=$(tput cols)
@@ -28,7 +28,7 @@ newline() {
 
 line
 echo "Gitmgr Scanner V. $version"
-echo "Scanning $ROOT_DIR..."\
+echo "Scanning $ROOT_DIR..."
 newline
 
 while read git_dir; do
